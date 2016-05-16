@@ -140,4 +140,28 @@ public class Recipe {
     }
 
 
+    /**
+     * Method which return a random Recipe.
+     * @return  A random Recipe.
+     * @throws IOException
+     */
+    public static Recipe getRandomRecipe() throws IOException {
+
+        Document document = Jsoup.connect("http://www.marmiton.org/recettes/recette-hasard.aspx").get();
+        String url = document.baseUri();
+
+        Element element = document.getElementsByClass("m_title").first();
+        element = element.getElementsByClass("item").first();
+        element = element.getElementsByClass("fn").first();
+
+        String title = element.text();
+
+        Recipe recipe = new Recipe(title, url);
+        recipe.loadInformations();
+
+        return recipe;
+
+    }
+
+
 }
