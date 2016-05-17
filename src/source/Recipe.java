@@ -44,7 +44,11 @@ public class Recipe {
     /**
      * Ingredients needed to cook the source.Recipe
      */
-    private String ingredients;
+    private ArrayList<Ingredient> ingredients;
+    /**
+     * Number of person for whom the recipe is made.
+     */
+    private int people;
 
 
     /**
@@ -75,7 +79,11 @@ public class Recipe {
         prepTime = (pageContent.getElementsByClass("preptime").first().getElementsByClass("value-title").first().attr("title")).substring(2);
         cookingTime = (pageContent.getElementsByClass("cooktime").first().getElementsByClass("value-title").first().attr("title")).substring(2);
         details = pageContent.getElementsByClass("m_content_recette_todo").first().text();
-        ingredients = pageContent.getElementsByClass("m_content_recette_ingredients").first().text();
+        String ingredientsString = pageContent.getElementsByClass("m_content_recette_ingredients").first().text();
+
+        ingredients = extractIngredients(ingredientsString);
+
+        people = getPeople(ingredientsString);
 
     }
 
@@ -96,18 +104,6 @@ public class Recipe {
         return cookingTime;
     }
 
-
-    @Override
-    public String toString() {
-        return "source.Recipe{" + "\n" +
-                "name='" + name + '\'' + "\n" +
-                ", urlLink='" + urlLink + '\'' + "\n" +
-                ", prepTime='" + prepTime + '\'' + "\n" +
-                ", cookingTime='" + cookingTime + '\'' + "\n" +
-                ", details='" + details + '\'' + "\n" +
-                ", ingredients='" + ingredients + '\'' + "\n" +
-                '}';
-    }
 
 
     /**
@@ -140,6 +136,61 @@ public class Recipe {
     }
 
 
+
+    private int getPeople(String ingredientsString){
+
+        String completeString[] = ingredientsString.split(":");
+
+        if (completeString[0].contains("personne")){
+
+            String peopleString = completeString[0].split("pour")[1].substring(1,2);
+            int people = Integer.parseInt(peopleString);
+            return people;
+        }
+
+        return 0;
+
+    }
+
+
+    private ArrayList<Ingredient> extractIngredients(String ingredientsString){
+
+        ArrayList<Ingredient> result = new ArrayList<>();
+
+        String completeString[] = ingredientsString.split(":");
+        completeString = completeString[1].split("-");
+
+        for (String s :
+                completeString) {
+            if (s.equals(" ")) {
+                //escape the first empty element
+            }else {
+
+                String ingredientName = "";
+                String unit = "";
+                float quantity = 0.0f;
+
+                if (s.matches("[^0-9]*[0-9]+[^0-9]*")) {
+                    String numberOnly = s.replaceAll("[^0-9]", "");
+                    quantity = Float.parseFloat(numberOnly);
+                }
+                if (s.contains(" de ")) {
+                    unit = s.split(" de ")[0];
+                    unit = unit.replaceAll("\\d", "");
+                    ingredientName = s.split(" de ")[1];
+
+                } else {
+                    ingredientName = s.replaceAll("\\d", "");
+                }
+
+                result.add(new Ingredient(ingredientName, quantity, unit));
+            }
+        }
+
+        return result;
+    }
+
+
     /**
      * Method which return a random Recipe.
      * @return  A random Recipe.
@@ -164,4 +215,16 @@ public class Recipe {
     }
 
 
+    @Override
+    public String toString() {
+        return "Recipe{" +
+                "name='" + name + '\'' +
+                ", urlLink='" + urlLink + '\'' +
+                ", prepTime='" + prepTime + '\'' +
+                ", cookingTime='" + cookingTime + '\'' +
+                ", details='" + details + '\'' +
+                ", ingredients=" + ingredients +
+                ", people=" + people +
+                '}';
+    }
 }
